@@ -1,6 +1,6 @@
 const storage = window.localStorage;
 
-const timeframes = ['daily', 'dailyshops', 'weekly', 'biweekly'];
+const timeframes = ['daily', 'weekly', 'biweekly'];
 var currentProfile = 'default';
 var currentLayout = 'default';
 var profilePrefix = '';
@@ -8,14 +8,20 @@ var dragRow; //global for currently dragged row
 var totalDailyProfit = 0; //global for total daily profit, maybe move this
 
 var daily = {
-    "syndicates-standing": { task: "Syndicates Standing", url: "https://warframe.fandom.com/wiki/Syndicate", short: false, desc: "Gain all the daily standing" },
-};
-
-var dailyshops = {
+    "sortie": { task: "Sortie", url: "https://warframe.fandom.com/wiki/Sortie", short: true, desc: "Complete daily Sortie" },
+    "kuva-lich-hunts": { task: "Kuva Lich hunts", url: "https://warframe.fandom.com/wiki/Kuva_Lich", short: false, desc: "Do Kuva Lich hunts for Requiem Relics" },
+    "focus-schools-standing": { task: "Focus Schools Standing", url: "https://warframe.fandom.com/wiki/Focus", short: false, desc: "Gain all the daily focus schools standing" },
+    "syndicates-standing": { task: "Syndicates Standing", url: "https://warframe.fandom.com/wiki/Syndicate", short: false, desc: "Gain all the daily syndicates standing" },
     "duviri-merchant": { task: "Duviri merchant", url: "https://warframe.fandom.com/wiki/Category:Duviri_Arcanes", short: true, desc: "Check the Duviri merchant for daily and weekly arcanes (if you have Rank 9 Intrinsic)" },
+    "materials-crafting": { task: "Forma, Fieldron, Detonite Injector, Mutagen Mass", url: "https://warframe.fandom.com/wiki/Forma#Acquisition", short: true, desc: "Craft Forma, Fieldron, Detonite Injector, Mutagen Mass" },
+    "steel-path-incursions": { task: "Steel Path Incursions", url: "https://warframe.fandom.com/wiki/Syndicate", short: false, desc: "Do Steel Path Incursions for Steel Path essence (visit Teshin to buy Kuva, Adapters, etc.)" },
 };
 
 var weekly = {
+    "circuit": { task: "The Circuit", url: "https://warframe.fandom.com/wiki/Circuit", short: true, desc: "Complete The Circuit" },
+    "archon-hunt": { task: "Archon Hunt", url: "https://warframe.fandom.com/wiki/Archon_Hunt", short: true, desc: "Complete the Archon Hunt" },
+    "netracell": { task: "Netracells", url: "https://warframe.fandom.com/wiki/Netracells", short: true, desc: "Complete the Netracell's quest limit (5/5)" },
+    "helminth": { task: "Helminth buffs", url: "https://warframe.fandom.com/wiki/Helminth", short: true, desc: "Buff warframe rotation for helminth standing" },
     "maroos-treasure-hunt": { task: "Maroo's Treasure Hunt", url: "https://warframe.fandom.com/wiki/Maroo#Weekly_Mission", short: true, desc: "Complete Maroo's Treasure Hunt" },
 };
 
@@ -83,98 +89,9 @@ const populateTable = function (timeFrame) {
             newRowAnchor.href = data[taskSlug].url;
             newRowAnchor.innerHTML = data[taskSlug].task;
 
-            /**
-             * Handle if task has associated items
-             * @todo refactor
-             */
-            if (!!data[taskSlug].outputs || !!data[taskSlug].outputs_max) {
-                let totalInputPrice = 0;
-                let totalItemProfit = 0;
-                let buyItems = [];
-                let skipItems = [];
 
-                // TODO: inputs
-                // if (!!data[taskSlug].inputs) {
-                //     for (let input of data[taskSlug].inputs) {
-                //         totalInputPrice += input.quantity * (input.shop_price ?? parseInt(String(rsapidata[input.id].price).replace(/\D/g, ''), 10));
-                //     }
-                // }
-
-                if (!!data[taskSlug].outputs_max) {
-                    let rowMaxProfit = 0;
-                    for (outputMax of data[taskSlug].outputs_max) {
-                        let rowMax = calcOutputs(outputMax, totalInputPrice, 'max');
-                        totalItemProfit += rowMax.totalItemProfit;
-                        if (taskState != 'hide') {
-                            totalDailyProfit += rowMax.totalDailyProfit;
-                        }
-                        rowMaxProfit += rowMax.totalDailyProfit
-                        buyItems.push(...rowMax.buyItems);
-                        skipItems.push(...rowMax.skipItems);
-                    }
-                    newRow.dataset.profit = rowMaxProfit;
-                } else {
-                    let rowSum = calcOutputs(data[taskSlug].outputs, totalInputPrice);
-                    totalItemProfit += rowSum.totalItemProfit;
-                    if (taskState != 'hide') {
-                        totalDailyProfit += rowSum.totalDailyProfit;
-                    }
-                    newRow.dataset.profit = rowSum.totalDailyProfit;
-                    buyItems.push(...rowSum.buyItems);
-                    skipItems.push(...rowSum.skipItems);
-                }
-
-
-                let profitSpan = newRowColor.parentNode.insertBefore(document.createElement('span'), newRowColor);
-                profitSpan.classList.add('item_profit');
-                profitSpan.innerHTML = '<span class="item_profit_label">Profit: </span><strong>' + totalItemProfit.toLocaleString() + '</strong><span class="coin">●</span>';
-                if (!!data[taskSlug].desc) {
-                    newRowColor.innerHTML += '<br>' + data[taskSlug].desc;
-                }
-
-                // for (let item of buyItems) {
-                //     let itemApiData = rsapidata[item.id];
-                //     let itemInputData = !!item.inputs ? ' data-inputs="' + encodeURIComponent(JSON.stringify(item.inputs)) + '"' : '';
-
-                //     newRowColor.innerHTML += '<div class="item_output" data-item_id="' + item.id + '" data-shop_price="' + item.shop_price + '"' + itemInputData + '>'
-                //         + '<img class="item_icon" src="/rsdata/images/' + item.id + '.gif">'
-                //         + (!!item.label_override ? item.label_override : itemApiData.name) + ' x' + item.quantity.toLocaleString() + ' (' + item.profit.toLocaleString() + ')'
-                //         + '</div>';
-                // }
-
-                // if (skipItems.length > 0) {
-                //     newRowColor.innerHTML += '<br>Skip:<br>'
-                //     for (let item of skipItems) {
-                //         let itemApiData = rsapidata[item.id];
-                //         newRowColor.innerHTML += '<div class="item_output" data-item_id="' + item.id + '" data-shop_price="' + item.shop_price + '">'
-                //             + '<img class="item_icon" src="/rsdata/images/' + item.id + '.gif">'
-                //             + (!!item.label_override ? item.label_override : itemApiData.name) + ' x' + item.quantity.toLocaleString() + ' (' + item.profit.toLocaleString() + ')'
-                //             + '</div>';
-                //     }
-                // }
-            } else if (!!data[taskSlug].inputs) {
-                //entries with only inputs and no outputs for display purposes
+            if (!!data[taskSlug].desc) {
                 newRowColor.innerHTML = data[taskSlug].desc;
-                // for (let item of data[taskSlug].inputs) {
-                //     let itemApiData = rsapidata[item.id];
-                //     let itemInputData = !!item.inputs ? ' data-inputs="' + encodeURIComponent(JSON.stringify(item.inputs)) + '"' : '';
-
-                //     newRowColor.innerHTML += '<div class="item_output" data-item_id="' + item.id + '" data-shop_price="' + item.shop_price + '"' + itemInputData + '>'
-                //         + '<img class="item_icon" src="/rsdata/images/' + item.id + '.gif">'
-                //         + (!!item.label_override ? item.label_override : itemApiData.name) + ' x' + item.quantity.toLocaleString()
-                //         + '</div>';
-                // }
-
-            } else if (!!data[taskSlug].desc) {
-                //@todo lazy hack for getting warbands timer to display for compact mode
-                if (taskSlug == 'wilderness-warbands') {
-                    let profitSpan = newRowColor.parentNode.insertBefore(document.createElement('span'), newRowColor);
-                    profitSpan.classList.add('item_profit');
-                    profitSpan.innerHTML = '<span class="item_profit_label">Next Warbands: </span><span id=\"warbands-countdown\"></span>';
-                    newRowColor.innerHTML = '<br>' + data[taskSlug].desc;
-                } else {
-                    newRowColor.innerHTML = data[taskSlug].desc;
-                }
             }
         } else {
             newRowAnchor.innerHTML = data[taskSlug].task;
@@ -184,96 +101,12 @@ const populateTable = function (timeFrame) {
         newRow.dataset.completed = taskState;
     }
 
-    //@todo kludgy double dom manipulation because depends on profit calcs in the html
-    if (['asc', 'desc', 'alpha'].includes(customOrder)) {
-        table.dataset.sort = customOrder;
-        let tableRows = Array.from(tbody.querySelectorAll('tr'));
-        tableRows.sort((a, b) => {
-            if (customOrder == 'alpha') {
-                return a.dataset.task.localeCompare(b.dataset.task)
-            } else if (customOrder == 'asc') {
-                return a.dataset.profit - b.dataset.profit;
-            } else if (customOrder == 'desc') {
-                return b.dataset.profit - a.dataset.profit;
-            }
-        });
-
-        for (let sortedrow of tableRows) {
-            tbody.appendChild(sortedrow);
-        }
-    }
-
     let tableRows = Array.from(tbody.querySelectorAll('tr'));
     for (let row of tableRows) {
         if (row.dataset.completed == 'hide') {
             tbody.appendChild(row);
         }
     }
-
-    if (timeFrame == 'dailyshops') {
-        document.getElementById('dailyshops_totalprofit').innerHTML = 'Total Profit: <strong>' + totalDailyProfit.toLocaleString() + '</strong><span class="coin">●</span>';
-    }
-};
-
-/**
- * Calculates profits for array of items passed in
- * @param {*} outputArray array of objects to calc
- * @param {*} totalInputPrice inputs price to calc profit
- * @param {*} method default is sum, set to `max` as needed
- * @returns Object
- */
-const calcOutputs = function (outputArray, totalInputPrice, method = 'sum') {
-    let returnObj = {
-        buyItems: [],
-        skipItems: [],
-        totalItemProfit: 0,
-        totalDailyProfit: 0
-    };
-
-    for (let item of outputArray) {
-        let itemApiData = rsapidata[item.id] ?? { price: 0 }
-
-        let itemPrice = String(itemApiData.price).endsWith('k')
-            ? parseFloat(String(itemApiData.price).slice(0, -1).replace(/,/g, '')) * 1000
-            : parseInt(String(itemApiData.price).replace(/\D/g, ''), 10);
-
-        if (!!item.multiplier) {
-            item.quantity *= item.multiplier;
-        }
-
-        let itemCost = totalInputPrice > 0 ? totalInputPrice : item.quantity * (item.shop_price ?? parseInt(String(rsapidata[item.id].price).replace(/\D/g, ''), 10));
-        item.profit = Math.round((item.quantity * itemPrice) - itemCost);
-
-        if (method == 'max') {
-            if ((!!item.inputs)) {
-                for (let inputkey in item.inputs) {
-                    let inputItemData = rsapidata[inputkey];
-                    item.profit = Math.round(item.profit - Math.round(item.inputs[inputkey] * inputItemData.price));
-                }
-            }
-
-            if (returnObj.buyItems.length > 0 && item.profit > returnObj.buyItems[0].profit) {
-                returnObj.buyItems[0] = item;
-            } else if (returnObj.buyItems.length == 0) {
-                returnObj.buyItems.push(item);
-            }
-        } else {
-            if (item.profit > 0) {
-                returnObj.buyItems.push(item);
-                returnObj.totalItemProfit += item.profit;
-                returnObj.totalDailyProfit += item.profit;
-            } else {
-                returnObj.skipItems.push(item);
-            }
-        }
-    }
-
-    if (method == 'max') {
-        returnObj.totalItemProfit += returnObj.buyItems[0].profit;
-        returnObj.totalDailyProfit += returnObj.buyItems[0].profit;
-    }
-
-    return returnObj;
 };
 
 /**
@@ -316,55 +149,9 @@ const tableEventListeners = function () {
             thisRow.dataset.completed = 'hide';
             storage.setItem(profilePrefix + taskSlug, 'hide');
 
-            if (thisRow.hasAttribute('data-profit')) {
-                let totalProfitElement = document.getElementById('dailyshops_totalprofit');
-                let totalProfitNumber = parseInt(String(totalProfitElement.innerHTML).replace(/\D/g, ''), 10);
-                let newProfit = totalProfitNumber - parseInt(thisRow.dataset.profit);
-                document.getElementById('dailyshops_totalprofit').innerHTML = 'Total Profit: <strong>' + newProfit.toLocaleString() + '</strong><span class="coin">●</span>';
-            }
-
             thisTbody.appendChild(thisRow);
         });
     }
-};
-
-/**
- * Handle clicking sort button for a table
- * @param {String} timeFrame
- */
-const sortButton = function (timeFrame) {
-    const sortButton = document.getElementById(timeFrame + '_sort_button');
-    sortButton.addEventListener('click', function (e) {
-        const table = document.querySelector('#' + timeFrame + '_table');
-        const tbody = table.querySelector('tbody');
-        const tableRows = Array.from(tbody.querySelectorAll('tr'));
-        let sortstate = table.dataset.sort;
-
-        tableRows.sort((a, b) => {
-            if (sortstate == 'alpha') {
-                let data = Object.keys(window[timeFrame]);
-                table.dataset.sort = 'default';
-                storage.removeItem(profilePrefix + timeFrame + '-order');
-                return data.indexOf(a.dataset.task) - data.indexOf(b.dataset.task);
-            } else if (sortstate == 'asc') {
-                table.dataset.sort = 'alpha';
-                storage.setItem(profilePrefix + timeFrame + '-order', 'alpha');
-                return a.querySelector('td a').innerHTML.localeCompare(b.querySelector('td a').innerHTML);
-            } else if (sortstate == 'desc') {
-                table.dataset.sort = 'asc';
-                storage.setItem(profilePrefix + timeFrame + '-order', 'asc');
-                return a.dataset.profit - b.dataset.profit;
-            } else {
-                table.dataset.sort = 'desc';
-                storage.setItem(profilePrefix + timeFrame + '-order', 'desc');
-                return b.dataset.profit - a.dataset.profit;
-            }
-        });
-
-        for (let sortedrow of tableRows) {
-            tbody.appendChild(sortedrow);
-        }
-    });
 };
 
 /**
@@ -542,24 +329,24 @@ const checkReset = function (timeFrame) {
 const countDown = function (timeFrame) {
     let nextdate = new Date();
 
-    if (timeFrame == 'weekly') {
-        let resetday = 3;
+    if (timeFrame == 'daily') {
+        nextdate.setUTCHours(24);
+        nextdate.setUTCMinutes(0);
+        nextdate.setUTCSeconds(0);
+    } else if (timeFrame == 'weekly') {
+        let resetday = 1;
         nextdate.setUTCHours(24);
         nextdate.setUTCMinutes(0);
         nextdate.setUTCSeconds(0);
         let weekmodifier = (7 + resetday - nextdate.getUTCDay()) % 7;
         nextdate.setUTCDate(nextdate.getUTCDate() + weekmodifier);
     } else if (timeFrame == 'biweekly') {
-        let resetday = 3;
-        nextdate.setUTCHours(0);
+        let resetday = 5;
+        nextdate.setUTCHours(13);
         nextdate.setUTCMinutes(0);
         nextdate.setUTCSeconds(0);
         let twoweekmodifier = (14 + resetday - nextdate.getUTCDay()) % 14;
         nextdate.setUTCDate(nextdate.getUTCDate() + twoweekmodifier);
-    } else {
-        nextdate.setUTCHours(24);
-        nextdate.setUTCMinutes(0);
-        nextdate.setUTCSeconds(0);
     }
 
     let nowtime = new Date();
@@ -740,47 +527,6 @@ const layouts = function () {
 };
 
 /**
- * Add event listeners for item tooltips
- */
-const itemStatsTooltip = function () {
-    let items = document.querySelectorAll('div.item_output');
-    let tooltip = document.getElementById('tooltip');
-
-    for (let item of items) {
-        item.addEventListener('mouseover', function (e) {
-            e.preventDefault();
-            let itemdata = rsapidata[this.dataset.item_id] ?? { name: "", price: 0 };
-
-            item.after(tooltip);
-
-            tooltip.innerHTML = '<img src="/rsdata/images/' + this.dataset.item_id + '.gif" class="item_icon"> ' + itemdata.name + '<br>'
-                + 'GE: ' + itemdata.price.toLocaleString() + '<span class="coin">●</span>' + (parseInt(this.dataset.shop_price) > 0 ? ' Shop: ' + parseInt(this.dataset.shop_price).toLocaleString() + '<span class="coin">●</span>' : '');
-            tooltip.innerHTML += '<br>Change: ' + (itemdata.price > itemdata.last ? '+' : '') + (itemdata.last != itemdata.price ? (itemdata.price - itemdata.last).toLocaleString() : '-') + (itemdata.price > itemdata.last ? '<span class="trend_positive">▲</span>' : itemdata.price < itemdata.last ? '<span class="trend_negative">▼</span>' : '<span class="trend_neutral">-</span>');
-
-            if (!!this.dataset.inputs) {
-                tooltip.innerHTML += '<br><strong>Inputs</strong>:<br>';
-
-                let inputItems = JSON.parse(decodeURIComponent(this.dataset.inputs));
-
-                for (let itemkey in inputItems) {
-                    let inputItemData = rsapidata[itemkey];
-                    tooltip.innerHTML += ' <img src="/rsdata/images/' + itemkey + '.gif" class="item_icon"> ' + inputItemData.name + ' x' + inputItems[itemkey] + ' (-' + parseInt(inputItemData.price * inputItems[itemkey]).toLocaleString() + ')<br>';
-                }
-
-            }
-
-            tooltip.style.display = 'block';
-            tooltip.style.visibility = 'visible';
-        });
-
-        item.addEventListener('mouseout', function (e) {
-            tooltip.style.display = 'none';
-            tooltip.style.visibility = 'hidden';
-        });
-    }
-};
-
-/**
  * Make bootstrap 5 dropdown menus collapse after link is clicked
  * old method of adding `data-toggle="collapse" data-target=".navbar-collapse.show"` to the <li>s was preventing navigation by the same element
  */
@@ -797,27 +543,6 @@ const dropdownMenuHelper = function () {
         });
     });
 };
-
-const dataUpdatedCheck = function () {
-    let xmlhttp = new XMLHttpRequest();
-
-    xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {   // XMLHttpRequest.DONE == 4
-            if (xmlhttp.status == 200) {
-                console.log(xmlhttp.responseText);
-            }
-            else if (xmlhttp.status == 400) {
-                alert('There was an error 400');
-            }
-            else {
-                alert('something else other than 200 was returned');
-            }
-        }
-    };
-
-    xmlhttp.open("GET", "/rsdata/rsapiupdated.json", true);
-    xmlhttp.send();
-}
 
 const enableBootstrapTooltips = function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -895,8 +620,6 @@ window.onload = function () {
 
     dropdownMenuHelper();
     tableEventListeners();
-    sortButton('dailyshops');
-    itemStatsTooltip();
     importExportModal();
 
     setInterval(function () {
@@ -905,8 +628,4 @@ window.onload = function () {
             countDown(timeFrame);
         }
     }, 1000);
-
-    setInterval(function () {
-        dataUpdatedCheck();
-    }, 600000);
 };
