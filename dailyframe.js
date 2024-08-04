@@ -1,6 +1,6 @@
 const storage = window.localStorage;
 
-const timeframes = ['daily', 'dailyshops', 'weekly', 'biweekly', 'monthly'];
+const timeframes = ['daily', 'dailyshops', 'weekly', 'biweekly'];
 var currentProfile = 'default';
 var currentLayout = 'default';
 var profilePrefix = '';
@@ -528,8 +528,6 @@ const checkReset = function (timeFrame) {
         let resetday = 3;
         let weekmodifier = (7 - resetday + nextdate.getUTCDay()) % 7;
         nextdate.setUTCDate(nextdate.getUTCDate() - weekmodifier);
-    } else if (timeFrame == 'monthly') {
-        nextdate.setUTCDate(1);
     }
 
     if (updateTime.getTime() < nextdate.getTime()) {
@@ -552,17 +550,12 @@ const countDown = function (timeFrame) {
         let weekmodifier = (7 + resetday - nextdate.getUTCDay()) % 7;
         nextdate.setUTCDate(nextdate.getUTCDate() + weekmodifier);
     } else if (timeFrame == 'biweekly') {
+        let resetday = 3;
         nextdate.setUTCHours(0);
         nextdate.setUTCMinutes(0);
         nextdate.setUTCSeconds(0);
         let twoweekmodifier = (14 + resetday - nextdate.getUTCDay()) % 14;
         nextdate.setUTCDate(nextdate.getUTCDate() + twoweekmodifier);
-    } else if (timeFrame == 'monthly') {
-        nextdate.setUTCHours(0);
-        nextdate.setUTCMinutes(0);
-        nextdate.setUTCSeconds(0);
-        nextdate.setUTCMonth(nextdate.getUTCMonth() + 1);
-        nextdate.setUTCDate(1);
     } else {
         nextdate.setUTCHours(24);
         nextdate.setUTCMinutes(0);
@@ -581,140 +574,6 @@ const countDown = function (timeFrame) {
 
     document.getElementById('countdown-' + timeFrame).innerHTML = (timeparts[0] > 0 ? (timeparts[0] + 'd ') : '') + (timeparts[1] > 0 ? (timeparts[1] + 'h ') : '') + timeparts[2] + 'm ' + timeparts[3] + 's';
 };
-
-/**
- * Starts at Thursday 0 UTC +7 hours each interval
- * @see https://runescape.wiki/w/Wilderness_Warbands#Timing
- */
-const warbandsCounter = function () {
-    let warbandsData = storage.getItem(profilePrefix + 'wilderness-warbands') ?? 'false';
-
-    if (warbandsData !== 'hide') {
-
-        let nowtime = new Date();
-        var daysAfterLastThursday = (-7 + 4) - nowtime.getUTCDay();
-
-        let lastThursday = new Date();
-        lastThursday.setUTCDate(nowtime.getUTCDate() + daysAfterLastThursday);
-        lastThursday.setUTCHours(0);
-        lastThursday.setUTCMinutes(0);
-        lastThursday.setUTCSeconds(0);
-
-        let elapsedTime = (nowtime.getTime() - lastThursday.getTime()) / 1000 / 60 / 60;
-        let elapsedIntervals = Math.floor(elapsedTime / 7);
-
-        //get time of number of intervals + 1
-        let nextWarbands = new Date();
-        nextWarbands.setTime(lastThursday.getTime() + (elapsedIntervals + 1) * 7 * 60 * 60 * 1000);
-        let remainingtime = (nextWarbands.getTime() - nowtime.getTime()) / 1000;
-
-        //countdown with the diff
-        let timeparts = [
-            Math.floor(remainingtime / 86400), //d
-            Math.floor(remainingtime % 86400 / 3600), //h
-            Math.floor(remainingtime % 3600 / 60), //m
-            Math.floor(remainingtime % 60) //s
-        ];
-
-        document.getElementById('warbands-countdown').innerHTML = (timeparts[0] > 0 ? (timeparts[0] + 'd ') : '') + (timeparts[1] > 0 ? (timeparts[1] + 'h ') : '') + timeparts[2] + 'm ' + timeparts[3] + 's';
-    }
-};
-
-/**
- * Determine current merchant stock and output to specific element
- * @see https://runescape.wiki/w/Module:Rotations/Merchant
- */
-const merchantStock = function () {
-    var merchantitems = {
-        42274: { name: "Uncharted island map", shop_price: 800000 },
-
-        34918: { name: "Advanced pulse core", shop_price: 800000 },
-        36918: { name: "Anima crystal", shop_price: 150000 },
-        42283: { name: "Barrel of bait", shop_price: 50000 },
-        42284: { name: "Broken fishing rod", shop_price: 50000 },
-        27234: { name: "D&D reset token (daily)", shop_price: 250000 },
-        41035: { name: "Gift for the Reaper", shop_price: 1250000 },
-        35203: { name: "Goebie burial charm", shop_price: 100000 },
-        42290: { name: "Livid plant", shop_price: 1000000 },
-        40304: { name: "Menaphite gift (small)", shop_price: 100000 },
-        40306: { name: "Menaphite gift (medium)", shop_price: 300000 },
-        42289: { name: "Sacred clay", shop_price: 600000 },
-        40150: { name: "Shattered anima", shop_price: 750000 },
-        34823: { name: "Silverhawk down", shop_price: 1500000 },
-        41036: { name: "Slayer VIP Coupon", shop_price: 200000 },
-        35202: { name: "Small goebie burial charm", shop_price: 50000 },
-        42285: { name: "Tangled fishbowl", shop_price: 50000 },
-        32708: { name: "Unfocused damage enhancer", shop_price: 500000 },
-        41034: { name: "Unstable air rune", shop_price: 250000 },
-        54109: { name: "Horn of honour", shop_price: 1000000 },
-
-        28550: { name: "Crystal triskelion", shop_price: 2000000 },
-        25202: { name: "Deathtouched dart", shop_price: 5000000 },
-        27236: { name: "D&D reset token (monthly)", shop_price: 1000000 },
-        27235: { name: "D&D reset token (weekly)", shop_price: 400000 },
-        18782: { name: "Dragonkin lamp", shop_price: 250000 },
-        35575: { name: "Dungeoneering Wildcard", shop_price: 400000 },
-        32622: { name: "Harmonic dust", shop_price: 2000000 },
-        35204: { name: "Large goebie burial charm", shop_price: 150000 },
-        40308: { name: "Menaphite gift (large)", shop_price: 500000 },
-        42282: { name: "Message in a bottle", shop_price: 200000 },
-        18778: { name: "Starved ancient effigy", shop_price: 1000000 },
-        37758: { name: "Taijitu", shop_price: 800000 },
-        32716: { name: "Unfocused reward enhancer", shop_price: 10000000 },
-    }
-
-    let slotABMap = [41035, 42284, 42283, 36918, 35202, 35203, 40304, 40306, 40150, 27234, 42289, 42290, 41036, 34823, 41034, 34918, 42285, 32708, 54109];
-    let slotCMap = [37758, 35204, 40308, 27235, 27236, 35575, 42282, 28550, 18778, 25202, 18782, 32622, 32716];
-    let runedate = Math.floor(((new Date() / 1000) - 1014768000) / 86400); // Days since 2002/02/27
-
-    function avoidLimit(num) {
-        let multi = [0, 2, 3, 5, 6, 9, 10, 13, 14, 15, 18, 19, 21, 22, 23, 25, 26, 27, 28, 30, 31, 32, 34];
-        let out = 0;
-        let mask = Math.pow(2, 48);
-        for (let i = 0; i <= 35; i++) {
-            if (multi.includes(i)) {
-                out = (out + num) % mask;
-            }
-            num = (num * 2) % mask;
-        }
-        return out;
-    }
-
-    function slotIndex(runedate, k, n) {
-        // Need to use BigInts through this method otherwise JS will treat numbers as 32bit whilst doing bitwise operations, which results in the wrong output
-        let seed = (BigInt(runedate) << 32n) + (BigInt(runedate) % k);
-        let multiplier = 25214903917n;
-        let mask = 281474976710655n;
-        seed = (seed ^ multiplier) & mask;
-        seed = BigInt(avoidLimit(Number(seed)));
-        seed = (seed + 11n) & mask;
-        return (seed >> 17n) % n;
-    }
-
-    let slotA = slotABMap[slotIndex(runedate, 3n, 19n)];
-    let slotB = slotABMap[slotIndex(runedate, 8n, 19n)];
-    let slotC = slotCMap[slotIndex(runedate, 5n, 13n)];
-
-    const outputElement = document.getElementById('traveling-merchant-stock');
-    outputElement.innerHTML = '<br><strong>Current stock:</strong><br>';
-    outputElement.innerHTML += '<img class="item_icon" src="/rsdata/images/' + slotA + '.gif"> ' + merchantitems[slotA].name + '<br>';
-    outputElement.innerHTML += '<img class="item_icon" src="/rsdata/images/' + slotB + '.gif"> ' + merchantitems[slotB].name + '<br>';
-    outputElement.innerHTML += '<img class="item_icon" src="/rsdata/images/' + slotC + '.gif"> ' + merchantitems[slotC].name;
-};
-
-/**
- * Calculate the featured dnd of the week
- * @see https://runescape.wiki/w/Template:SofDnD
- */
-const dndOfTheWeek = function () {
-    const outputElement = document.getElementById('dnd-of-the-week');
-
-    const dndRotation = ['Evil Tree', 'Shooting Star', 'Penguin Hide and Seek', 'Circus'];
-
-    let currentRotation = Math.floor(((Date.now() / 1000) + 86400) / 604800) % 4;
-
-    outputElement.innerHTML = '<br><strong>' + dndRotation[currentRotation] + '</strong>';
-}
 
 /**
  * Good enough for now profile system
@@ -1038,9 +897,6 @@ window.onload = function () {
     tableEventListeners();
     sortButton('dailyshops');
     itemStatsTooltip();
-    warbandsCounter();
-    merchantStock();
-    dndOfTheWeek();
     importExportModal();
 
     setInterval(function () {
@@ -1048,8 +904,6 @@ window.onload = function () {
             checkReset(timeFrame);
             countDown(timeFrame);
         }
-
-        warbandsCounter();
     }, 1000);
 
     setInterval(function () {
