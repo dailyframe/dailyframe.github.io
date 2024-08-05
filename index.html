@@ -52,13 +52,19 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
+                        <a href="#bounty" class="nav-link" id="bounty_nav">Bounties</a>
+                    </li>
+                    <li class="nav-item active">
                         <a href="#dailies" class="nav-link" id="daily_nav">Dailies</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="#syndicates" class="nav-link" id="syndicates_nav">Syndicates</a>
                     </li>
                     <li class="nav-item">
                         <a href="#weeklies" class="nav-link" id="weekly_nav">Weeklies</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#biweeklies" class="nav-link" id="biweekly_nav">Biweeklies</a>
+                        <a href="#barokiteer" class="nav-link" id="barokiteer_nav">Baro Ki'Teer</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -112,6 +118,32 @@
     </nav>
 
     <div class="container-xl activity_tables">
+        <div id="bounties" class="table_container bounty_table">
+            <table id="bounty_table" class="activity_table table table-dark table-striped table-hover"
+                data-timeframe="bounty">
+                <thead>
+                    <tr>
+                        <th>Bounties <span id="countdown-bounty" class="countdown"></span></th>
+                        <td>
+                            <span class="text-nowrap">
+                                <button id="bounty_reset_button"
+                                    class="reset_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Reset hiding and order to default">↺<span
+                                        class="expanding_text">Reset</span></button>
+                                <button id="bounty_hide_button"
+                                    class="hide_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Hide section">▲<span class="expanding_text">Hide</span></button>
+                                <button id="bounty_unhide_button"
+                                    class="unhide_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Unhide Section">▼<span class="expanding_text">Unhide</span></button>
+                            </span>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
         <div id="dailies" class="table_container daily_table">
             <table id="daily_table" class="activity_table table table-dark table-striped table-hover"
                 data-timeframe="daily">
@@ -128,6 +160,32 @@
                                     class="hide_button expanding_button btn btn-secondary btn-sm active"
                                     title="Hide section">▲<span class="expanding_text">Hide</span></button>
                                 <button id="daily_unhide_button"
+                                    class="unhide_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Unhide Section">▼<span class="expanding_text">Unhide</span></button>
+                            </span>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="syndicates" class="table_container syndicates_table">
+            <table id="syndicates_table" class="activity_table table table-dark table-striped table-hover"
+                data-timeframe="syndicates">
+                <thead>
+                    <tr>
+                        <th>Syndicates <span id="countdown-syndicates" class="countdown"></span></th>
+                        <td>
+                            <span class="text-nowrap">
+                                <button id="syndicates_reset_button"
+                                    class="reset_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Reset hiding and order to default">↺<span
+                                        class="expanding_text">Reset</span></button>
+                                <button id="syndicates_hide_button"
+                                    class="hide_button expanding_button btn btn-secondary btn-sm active"
+                                    title="Hide section">▲<span class="expanding_text">Hide</span></button>
+                                <button id="syndicates_unhide_button"
                                     class="unhide_button expanding_button btn btn-secondary btn-sm active"
                                     title="Unhide Section">▼<span class="expanding_text">Unhide</span></button>
                             </span>
@@ -164,22 +222,22 @@
             </table>
         </div>
 
-        <div id="biweekly" class="table_container biweekly_table">
-            <table id="biweekly_table" class="activity_table table table-dark table-striped table-hover"
-                data-timeframe="biweekly">
+        <div id="barokiteer" class="table_container barokiteer_table">
+            <table id="barokiteer_table" class="activity_table table table-dark table-striped table-hover"
+                data-timeframe="barokiteer">
                 <thead>
                     <tr>
-                        <th>Biweeklies <span id="countdown-biweekly" class="countdown"></span></th>
+                        <th>Baro Ki'teer <span id="countdown-barokiteer" class="countdown"></span></th>
                         <td>
                             <span class="text-nowrap">
-                                <button id="biweekly_reset_button"
+                                <button id="barokiteer_reset_button"
                                     class="reset_button expanding_button btn btn-secondary btn-sm active"
                                     title="Reset hiding and order to default">↺<span
                                         class="expanding_text">Reset</span></button>
-                                <button id="biweekly_hide_button"
+                                <button id="barokiteer_hide_button"
                                     class="hide_button expanding_button btn btn-secondary btn-sm active"
                                     title="Hide section">▲<span class="expanding_text">Hide</span></button>
-                                <button id="biweekly_unhide_button"
+                                <button id="barokiteer_unhide_button"
                                     class="unhide_button expanding_button btn btn-secondary btn-sm active"
                                     title="Unhide Section">▼<span class="expanding_text">Unhide</span></button>
                             </span>
@@ -250,8 +308,12 @@
     </div>
 
     <footer>
-        <a href="https://github.com/dailyframe/dailyframe.github.io" target="_blank" rel="noopener noreferrer"><img
-                src="/img/github.png">Github</a>
+        <a href="https://github.com/dailyframe/dailyframe.github.io" target="_blank" rel="noopener noreferrer">
+            <img src="/img/github.png"> Github
+        </a>
+        <a href="mailto:diogo-felix-martins@gmail.com">
+            <img src="/img/mail.png"> Feedback
+        </a>
     </footer>
 
 </body>

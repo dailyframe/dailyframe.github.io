@@ -1,32 +1,111 @@
 const storage = window.localStorage;
 
-const timeframes = ['daily', 'weekly', 'biweekly'];
+const timeframes = ['bounty', 'daily', 'syndicates', 'weekly', 'barokiteer'];
 var currentProfile = 'default';
 var currentLayout = 'default';
 var profilePrefix = '';
 var dragRow; //global for currently dragged row
-var totalDailyProfit = 0; //global for total daily profit, maybe move this
+
+var bounty = {
+    "ostron-bounties": { task: "Ostron", url: "https://warframe.fandom.com/wiki/Ostron", short: false, desc: "Complete Ostron bounties" },
+    "solaris-united-bounties": { task: "Solaris United", url: "https://warframe.fandom.com/wiki/Solaris_United", short: false, desc: "Complete United bounties" },
+    "entrati-bounties": { task: "Entrati", url: "https://warframe.fandom.com/wiki/Entrati", short: false, desc: "Complete Entrati bounties" },
+};
 
 var daily = {
     "sortie": { task: "Sortie", url: "https://warframe.fandom.com/wiki/Sortie", short: true, desc: "Complete daily Sortie" },
     "kuva-lich-hunts": { task: "Kuva Lich hunts", url: "https://warframe.fandom.com/wiki/Kuva_Lich", short: false, desc: "Do Kuva Lich hunts for Requiem Relics" },
     "focus-schools-standing": { task: "Focus Schools Standing", url: "https://warframe.fandom.com/wiki/Focus", short: false, desc: "Gain all the daily focus schools standing" },
-    "syndicates-standing": { task: "Syndicates Standing", url: "https://warframe.fandom.com/wiki/Syndicate", short: false, desc: "Gain all the daily syndicates standing" },
     "duviri-merchant": { task: "Duviri merchant", url: "https://warframe.fandom.com/wiki/Category:Duviri_Arcanes", short: true, desc: "Check the Duviri merchant for daily and weekly arcanes (if you have Rank 9 Intrinsic)" },
     "materials-crafting": { task: "Forma, Fieldron, Detonite Injector, Mutagen Mass", url: "https://warframe.fandom.com/wiki/Forma#Acquisition", short: true, desc: "Craft Forma, Fieldron, Detonite Injector, Mutagen Mass" },
     "steel-path-incursions": { task: "Steel Path Incursions", url: "https://warframe.fandom.com/wiki/Syndicate", short: false, desc: "Do Steel Path Incursions for Steel Path essence (visit Teshin to buy Kuva, Adapters, etc.)" },
 };
 
-var weekly = {
-    "circuit": { task: "The Circuit", url: "https://warframe.fandom.com/wiki/Circuit", short: true, desc: "Complete The Circuit" },
-    "archon-hunt": { task: "Archon Hunt", url: "https://warframe.fandom.com/wiki/Archon_Hunt", short: true, desc: "Complete the Archon Hunt" },
-    "netracell": { task: "Netracells", url: "https://warframe.fandom.com/wiki/Netracells", short: true, desc: "Complete the Netracell's quest limit (5/5)" },
-    "helminth": { task: "Helminth buffs", url: "https://warframe.fandom.com/wiki/Helminth", short: true, desc: "Buff warframe rotation for helminth standing" },
-    "maroos-treasure-hunt": { task: "Maroo's Treasure Hunt", url: "https://warframe.fandom.com/wiki/Maroo#Weekly_Mission", short: true, desc: "Complete Maroo's Treasure Hunt" },
+var syndicates = {
+    "faction": { task: "Factions", url: "https://warframe.fandom.com/wiki/Syndicate#Faction_Syndicates", short: false, desc: "Gain all the daily Factions' standing" },
+    "cephalon-simaris": { task: "Cephalon Simaris", url: "https://warframe.fandom.com/wiki/Cephalon_Simaris", short: false, desc: "Gain all the daily Cephalon Simaris' standing" },
+    "conclave": { task: "Conclave", url: "https://warframe.fandom.com/wiki/Conclave", short: false, desc: "Gain all the daily Conclave standing" },
+    "ostron": { task: "Ostron", url: "https://warframe.fandom.com/wiki/Ostron", short: false, desc: "Gain all the daily Ostron standing" },
+    "the-quills": { task: "The Quills", url: "https://warframe.fandom.com/wiki/The_Quills", short: false, desc: "Gain all the daily The Quills standing" },
+    "solaris-united": { task: "Solaris United", url: "https://warframe.fandom.com/wiki/Solaris_United", short: false, desc: "Gain all the daily Solaris United standing" },
+    "vox-solaris": { task: "Vox Solaris", url: "https://warframe.fandom.com/wiki/Vox_Solaris", short: false, desc: "Gain all the daily Vox Solaris standing" },
+    "ventkids": { task: "Ventkids", url: "https://warframe.fandom.com/wiki/Ventkids", short: false, desc: "Gain all the daily Ventkids standing" },
+    "entrati": { task: "Entrati", url: "https://warframe.fandom.com/wiki/Entrati", short: false, desc: "Gain all the daily Entrati standing" },
+    "necraloid": { task: "Necraloid", url: "https://warframe.fandom.com/wiki/Necraloid", short: false, desc: "Gain all the daily Necraloid standing" },
+    "holdfasts": { task: "Holdfasts", url: "https://warframe.fandom.com/wiki/Holdfasts", short: false, desc: "Gain all the daily Holdfasts standing" },
+    "cavia": { task: "Cavia", url: "https://warframe.fandom.com/wiki/Cavia", short: false, desc: "Gain all the daily Cavia standing" },
 };
 
-var biweekly = {
+var weekly = {
+    "archon-hunt": { task: "Archon Hunt", url: "https://warframe.fandom.com/wiki/Archon_Hunt", short: true, desc: "Complete the Archon Hunt" },
+    "break-namer": { task: "Break Namer", url: "https://warframe.fandom.com/wiki/Break_Narmer", short: true, desc: "Complete the Break Namer" },
+    "circuit": { task: "The Circuit", url: "https://warframe.fandom.com/wiki/Circuit", short: true, desc: "Complete The Circuit" },
+    "helminth": { task: "Helminth buffs", url: "https://warframe.fandom.com/wiki/Helminth", short: true, desc: "Buff warframe rotation for helminth standing" },
+    "maroos-treasure-hunt": { task: "Maroo's Treasure Hunt", url: "https://warframe.fandom.com/wiki/Maroo#Weekly_Mission", short: true, desc: "Complete Maroo's Treasure Hunt" },
+    "netracell": { task: "Netracells", url: "https://warframe.fandom.com/wiki/Netracells", short: true, desc: "Complete the Netracells' quest limit (5/5)" },
+};
+
+var barokiteer = {
     "baro-kiteer": { task: "Baro Ki'Teer", url: "https://warframe.fandom.com/wiki/Baro_Ki%27Teer", short: true, desc: "Visit Baro Ki'Teer" },
+};
+
+/**
+ * Add a countdown timer until the next reset for a timeframe
+ * @param {String} timeFrame
+ */
+const countDown = function (timeFrame) {
+    let nowtime = new Date();
+    let nextdate = new Date();
+
+    if (timeFrame == 'bounty') {
+        let currentMinutes = nowtime.getUTCHours() * 60 + nowtime.getUTCMinutes();
+        let intervals = [0, 150, 300, 450, 600, 750, 900, 1050, 1200, 1350, 1500, 1650];
+
+        for (let i = 0; i < intervals.length; i++) {
+            if (currentMinutes < intervals[i]) {
+                nextdate.setUTCHours(0);
+                nextdate.setUTCMinutes(intervals[i]);
+                nextdate.setUTCSeconds(0);
+                break;
+            }
+        }
+
+        if (currentMinutes >= intervals[intervals.length - 1]) {
+            nextdate.setUTCDate(nextdate.getUTCDate() + 1);
+            nextdate.setUTCHours(0);
+            nextdate.setUTCMinutes(intervals[0]);
+            nextdate.setUTCSeconds(0);
+        }
+    } else if (timeFrame == 'daily' || timeFrame == 'syndicates') {
+        nextdate.setUTCHours(24);
+        nextdate.setUTCMinutes(0);
+        nextdate.setUTCSeconds(0);
+    } else if (timeFrame == 'weekly') {
+        let resetday = 1;
+        nextdate.setUTCHours(24);
+        nextdate.setUTCMinutes(0);
+        nextdate.setUTCSeconds(0);
+        let weekmodifier = (7 + resetday - nextdate.getUTCDay()) % 7;
+        nextdate.setUTCDate(nextdate.getUTCDate() + weekmodifier);
+    } else if (timeFrame == 'barokiteer') {
+        let resetday = 5;
+        nextdate.setUTCHours(13);
+        nextdate.setUTCMinutes(0);
+        nextdate.setUTCSeconds(0);
+        let twoweekmodifier = (14 + resetday - nextdate.getUTCDay()) % 14;
+        nextdate.setUTCDate(nextdate.getUTCDate() + twoweekmodifier);
+    }
+
+    let remainingtime = (nextdate.getTime() - nowtime.getTime()) / 1000;
+
+    let timeparts = [
+        Math.floor(remainingtime / 86400), //d
+        Math.floor(remainingtime % 86400 / 3600), //h
+        Math.floor(remainingtime % 3600 / 60), //m
+        Math.floor(remainingtime % 60) //s
+    ];
+
+    document.getElementById('countdown-' + timeFrame).innerHTML = (timeparts[0] > 0 ? (timeparts[0] + 'd ') : '') + (timeparts[1] > 0 ? (timeparts[1] + 'h ') : '') + timeparts[2] + 'm ' + timeparts[3] + 's';
 };
 
 /**
@@ -320,46 +399,6 @@ const checkReset = function (timeFrame) {
     if (updateTime.getTime() < nextdate.getTime()) {
         resetTable(timeFrame, true);
     }
-};
-
-/**
- * Add a countdown timer until the next reset for a timeframe
- * @param {String} timeFrame
- */
-const countDown = function (timeFrame) {
-    let nextdate = new Date();
-
-    if (timeFrame == 'daily') {
-        nextdate.setUTCHours(24);
-        nextdate.setUTCMinutes(0);
-        nextdate.setUTCSeconds(0);
-    } else if (timeFrame == 'weekly') {
-        let resetday = 1;
-        nextdate.setUTCHours(24);
-        nextdate.setUTCMinutes(0);
-        nextdate.setUTCSeconds(0);
-        let weekmodifier = (7 + resetday - nextdate.getUTCDay()) % 7;
-        nextdate.setUTCDate(nextdate.getUTCDate() + weekmodifier);
-    } else if (timeFrame == 'biweekly') {
-        let resetday = 5;
-        nextdate.setUTCHours(13);
-        nextdate.setUTCMinutes(0);
-        nextdate.setUTCSeconds(0);
-        let twoweekmodifier = (14 + resetday - nextdate.getUTCDay()) % 14;
-        nextdate.setUTCDate(nextdate.getUTCDate() + twoweekmodifier);
-    }
-
-    let nowtime = new Date();
-    let remainingtime = (nextdate.getTime() - nowtime.getTime()) / 1000;
-
-    let timeparts = [
-        Math.floor(remainingtime / 86400), //d
-        Math.floor(remainingtime % 86400 / 3600), //h
-        Math.floor(remainingtime % 3600 / 60), //m
-        Math.floor(remainingtime % 60) //s
-    ];
-
-    document.getElementById('countdown-' + timeFrame).innerHTML = (timeparts[0] > 0 ? (timeparts[0] + 'd ') : '') + (timeparts[1] > 0 ? (timeparts[1] + 'h ') : '') + timeparts[2] + 'm ' + timeparts[3] + 's';
 };
 
 /**
