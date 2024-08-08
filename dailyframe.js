@@ -42,7 +42,8 @@ var weekly = {
     "circuit": { task: "The Circuit", url: "https://warframe.fandom.com/wiki/Circuit", short: true, desc: "Complete The Circuit" },
     "helminth": { task: "Helminth buffs", url: "https://warframe.fandom.com/wiki/Helminth", short: true, desc: "Buff warframe rotation for helminth standing" },
     "maroos-treasure-hunt": { task: "Maroo's Treasure Hunt", url: "https://warframe.fandom.com/wiki/Maroo#Weekly_Mission", short: true, desc: "Complete Maroo's Treasure Hunt" },
-    "netracell": { task: "Netracells", url: "https://warframe.fandom.com/wiki/Netracells", short: true, desc: "Complete the Netracells' quest limit (5/5)" },
+    "netracell": { task: "Netracells", url: "https://warframe.fandom.com/wiki/Netracells", short: true, desc: "Complete the Netracells' pulses (5/5)" },
+    "deep-archimedea": { task: "Deep Archimedea", url: "https://warframe.fandom.com/wiki/Deep_Archimedea", short: true, desc: "Complete the Deep Archimedea's pulses (5/5)" },
 };
 
 var barokiteer = {
